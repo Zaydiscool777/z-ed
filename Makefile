@@ -1,16 +1,16 @@
 all: main
 
 CC = clang
-override CFLAGS += -g -Wno-everything -pthread -lm
+# overide CFLAGS +=
+CFILES = main.c
 
-SRCS = $(shell find . -name '.ccls-cache' -type d -prune -o -type f -name '*.c' -print)
-HEADERS = $(shell find . -name '.ccls-cache' -type d -prune -o -type f -name '*.h' -print)
+main:
+	$(CC) $(CFLAGS) -o ./main $(CFILES)
+	./main
 
-main: $(SRCS) $(HEADERS)
-	$(CC) $(CFLAGS) $(SRCS) -o "$@"
-
-main-debug: $(SRCS) $(HEADERS)
-	$(CC) $(CFLAGS) -O0 $(SRCS) -o "$@"
-
+debug:
+	$(CC) $(CFLAGS) -O0 -v -o ./main-debug $(CFILES)
+	./main-debug
+	
 clean:
 	rm -f main main-debug

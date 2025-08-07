@@ -7,7 +7,7 @@ entrypoint = "main.c"
 channel = "stable-24_05"
 
 [gitHubImport]
-requiredFiles = [".replit", "replit.nix", ".ccls-cache"]
+requiredFiles = [".replit", "replit.nix"]
 
 [debugger]
 support = true
@@ -18,14 +18,14 @@ noFileArgs = true
 
 [debugger.interactive]
 transport = "stdio"
-startCommand = ["dap-cpp"]
+
 
 [debugger.interactive.initializeMessage]
 command = "initialize"
 type = "request"
 
 [debugger.interactive.initializeMessage.arguments]
-adapterID = "cppdbg"
+adapterID = "cppdbg" # c only
 clientID = "replit"
 clientName = "replit.com"
 columnsStartAt1 = true
@@ -50,7 +50,6 @@ environment = []
 externalConsole = false
 logging = {}
 miDebuggerPath = "gdb"
-name = "g++ - Build and debug active file"
 program = "./main-debug"
 request = "launch"
 setupCommands = [
@@ -63,3 +62,31 @@ type = "cppdbg"
 
 [languages.c]
 pattern = "**/*.{c,h}"
+
+[languages.c.languageServer]
+start = "ccls"
+
+[workflows]
+runButton = "Debug"
+
+[[workflows.workflow]]
+name = "Update documentation via Doxygen"
+mode = "sequential"
+author = 19016378
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "doxygen"
+
+[[workflows.workflow]]
+name = "Debug"
+mode = "sequential"
+author = 19016378
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "make debug"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "./main-debug"

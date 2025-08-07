@@ -35,12 +35,14 @@
 *.i*86
 *.x86_64
 *.hex
+main
 
 # Debug files
 *.dSYM/
 *.su
 *.idb
 *.pdb
+main-debug
 
 # Kernel Module Compile Results
 *.mod*
@@ -50,3 +52,7 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# ccls
+.ccls-cache/
+
