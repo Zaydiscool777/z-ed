@@ -1,7 +1,7 @@
 compile = ["make", "-s"]
 run = "./main"
 entrypoint = "main.c"
-hidden = ["main", "main-debug", "**/*.o", "**/*.d", ".ccls-cache", "Makefile"]
+#hidden = ["main", "main-debug", "**/*.o", "**/*.d", ".ccls-cache", "Makefile"]
 
 [nix]
 channel = "stable-24_05"
@@ -63,6 +63,3 @@ type = "cppdbg"
 
 [languages.c]
 pattern = "**/*.{c,h}"
-
-[languages.c.languageServer]
-start = "ccls"
