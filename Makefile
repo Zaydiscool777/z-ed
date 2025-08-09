@@ -1,16 +1,20 @@
 all: main
+love: debug
 
-CC = clang
+CC = gcc # can use tcc, gcc, or clang
 # overide CFLAGS +=
 CFILES = main.c
 
-main:
-	$(CC) $(CFLAGS) -o ./main $(CFILES)
-	./main
+main: clean
+	$(CC) $(CFILES) $(CFLAGS)
+	./a.out
 
-debug:
-	$(CC) $(CFLAGS) -O0 -v -o ./main-debug $(CFILES)
-	./main-debug
-	
+debug: clean
+	$(CC) $(CFILES) $(CFLAGS) -g -Og -v
+	gdb ./a.out
+
+obj:
+	objdump -afpPxDSsgeGtTrR ./a.out > object
+
 clean:
-	rm -f main main-debug
+	rm -f a.out

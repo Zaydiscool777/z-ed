@@ -1,6 +1,6 @@
-compile = ["make", "-s"]
-run = "./main"
-entrypoint = "main.c"
+compile = ["make"]
+run = "./a.out"
+entrypoint = "main"
 #hidden = ["main", "main-debug", "**/*.o", "**/*.d", ".ccls-cache", "Makefile"]
 
 [nix]
@@ -67,16 +67,6 @@ pattern = "**/*.{c,h}"
 start = "ccls"
 
 [workflows]
-runButton = "Debug"
-
-[[workflows.workflow]]
-name = "Update documentation via Doxygen"
-mode = "sequential"
-author = 19016378
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "doxygen"
 
 [[workflows.workflow]]
 name = "Debug"
@@ -85,8 +75,13 @@ author = 19016378
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "make debug"
+args = "make love"
+
+[[workflows.workflow]]
+name = "Dump"
+mode = "sequential"
+author = 19016378
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "./main-debug"
+args = "make obj"
