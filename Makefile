@@ -4,18 +4,19 @@ love: debug
 
 CC = gcc # can use tcc, gcc, or clang
 # overide CFLAGS +=
-CFILES = main.c
+CFILES = src/main.c
+COUT = a.out
 
 main: clean
-	$(CC) $(CFILES) $(CFLAGS) -O3
-	./a.out
+	$(CC) $(CFILES) $(CFLAGS) -o $(COUT) -O3
+	./$(COUT)
 
 debug: clean
-	$(CC) $(CFILES) $(CFLAGS) -g -O0 -v -Wall
-	gdb ./a.out --write
+	$(CC) $(CFILES) $(CFLAGS) -o $(COUT) -g -O0 -v -Wall
+	gdb $(COUT) --write
 
 obj:
-	objdump -afpPxDSsgeGtTrR ./a.out > object
+	objdump -afpPxDSsgeGtTrR $(COUT) > object
 
 clean:
-	rm -f a.out
+	rm -f $(COUT)
