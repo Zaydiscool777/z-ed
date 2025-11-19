@@ -4,7 +4,7 @@ love: debug
 
 CC = gcc # can use tcc, gcc, or clang
 # overide CFLAGS +=
-CFILES = src/main.c
+CFILES = src/main.h
 COUT = a.out
 
 main: clean
@@ -13,10 +13,12 @@ main: clean
 
 debug: clean
 	$(CC) $(CFILES) $(CFLAGS) -o $(COUT) -g -O0 -v -Wall
-	gdb $(COUT) --write
+	# gdb $(COUT) --write
 
 obj:
-	objdump -afpPxDSsgeGtTrR $(COUT) > object
+	objdump -afpxDSsgeGtTrR $(COUT) > object
+
+.PHONY: main debug obj all love clean
 
 clean:
 	rm -f $(COUT)

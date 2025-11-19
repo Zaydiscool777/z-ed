@@ -1,2 +1,6 @@
-This implementation uses POSIX *Basic* Regular Expressions
-(originally, E.R.E. was used) from regex.h.
+Nothing notable, as this is unfinished.
+Any help you give in the project will be helpful.
+
+# maps
+
+![z-ed main map](docs/imgs/map.png)
