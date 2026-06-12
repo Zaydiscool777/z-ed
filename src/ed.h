@@ -1,6 +1,3 @@
-
-#define NULL ((void *)0)
-
 /**
  * @brief Type synonym for an address in the buffer.
  * @typedef unsigned int

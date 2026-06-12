@@ -1,52 +1,23 @@
-#include "main.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include "ed.h"
 
-unsigned int parse_uint(char *s){
-	int x = 0;
-	char *i = s;
-	while(*i >= '0' && *i <= '9') {
-		x = x * 10 + (*i - '0');
-	}
-	return x;
-}
+int main() {
+	char *inp = NULL;
+	size_t len = 0;
+	ssize_t ret;
 
-struct parse_addr interp_addr(struct buffer buff, addr cur, char *s) {
-	char *x;
-	x = s;
-	int c = 0;
-	while(*x != NULL) {
-		if(*x == '/') {
-			char r = 0;
-			while(!(*x == '/' && r == 0)) {
-				if(*x == '\\') {
-					r = 1;
-				} else {
-					r = 0;
-				}
-				c++;
-				x++;
-			}
-			// TODO: finish...
-		} else if (*x == '?') {
-			char r = 0;
-			while(!(*x == '?' && r == 0)) {
-				if(*x == '\\') {
-					r = 1;
-				} else {
-					r = 0;
-				}
-				c++;
-				x++;
-			}
-			// TODO: finish...
+	while (1) {
+		ret = getline(&inp, &len, stdin);
+		if (ret != -1) {
+			printf("valid: %li\n", ret);
+			fputs(inp, stdout);
 		} else {
-			while(*x >= '0' || *x <= '9'
-				|| *x == '+' || *x == '-'
-				|| *x == '.' || *x == '$') {
-					c++;
-					x++;
-					// TODO: finish...
-			}
+			puts("invalid.");
+			break;
 		}
 	}
-}
 
+	free(inp);
+	return 1;
+}

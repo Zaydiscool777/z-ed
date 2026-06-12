@@ -1,0 +1,32 @@
+
+IO is obvious: stdin & stdout. usually the user, sometimes a pipe. (The arrow 
+from IO to commproc should be a line instead.)
+
+commproc stands for command processing. It handles the interface between IO and 
+the commands. It’s main job is to read the input from the user, find which 
+command the user is trying to call, find the command that does this (for user 
+commands, this may require dynamic linking), call it with the whole user input 
+(lib has functions for extracting information from input), and then loops back. 
+It would have to be able to interpret backslashes before newlines so that 
+multi-line commands can be used. It could be able to process Ctrl-C to stop a 
+command, although how this will be done is not so apparent to me yet.
+
+Standard commands are just the ones found in ed. The characters for those are: 
+"acdeEfgGhHijklmnpPqQrstuvVwWxyz!#=", and a new line itself. Some of these will 
+probably be removed, due to how useless they are.
+
+User commands are implemented by the user. They might be in a separate file, or 
+they might not. Both files will likely be editable, for more extensibility.
+Some possible user commands that are not standard are: "AbBCDFIJKLMNoORSTUXYZ", 
+and multiple symbols (although not the one used in addresses.) The colon can be 
+used for word commands, like in ex.
+
+Commands in general take all the input from the user for that command, rather 
+than the input in a comfortable style, and instead they have to use functions 
+from lib to format it into a more usable state. They may also use lib for other 
+tasks as well. Commands might also use extra IO not given by commproc, usually 
+to act as a separate “mode”, for example to input text into a file.
+
+lib is probably the most important module of the application. It contains the 
+common functions for both commproc and commands. Just one instance of many is 
+to operate on address regions for commands.
