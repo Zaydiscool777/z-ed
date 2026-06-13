@@ -35,14 +35,12 @@
 *.i*86
 *.x86_64
 *.hex
-main
 
 # Debug files
 *.dSYM/
 *.su
 *.idb
 *.pdb
-main-debug
 
 # Kernel Module Compile Results
 *.mod*
@@ -53,9 +51,19 @@ Module.symvers
 Mkfile.old
 dkms.conf
 
-# ccls
-.ccls-cache/
+# debug information files
+*.dwo
 
-# --------------------me
-.vscode/
-object
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
+build/

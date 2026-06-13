@@ -1,23 +1,27 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "ed.h"
 
 int main() {
+	void *handle = dlopen("./libcomm.so", RTLD_NOW);
+	if (handle == NULL) {
+		exit(EXIT_FAILURE);
+	}
+
 	char *inp = NULL;
 	size_t len = 0;
-	ssize_t ret;
+	char funcname[2] = "\0\0";
+	void (*func)();
 
 	while (1) {
-		ret = getline(&inp, &len, stdin);
-		if (ret != -1) {
-			printf("valid: %li\n", ret);
-			fputs(inp, stdout);
-		} else {
-			puts("invalid.");
+		ssize_t ret = getline(&inp, &len, stdin);
+		if (ret == -1) {
+			puts("eof.");
 			break;
 		}
+		printf("ok: %li\n", ret);
+		func = *load(parse_command(inp));
+		func();
 	}
 
 	free(inp);
-	return 1;
+	return EXIT_SUCCESS;
 }

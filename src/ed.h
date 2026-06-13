@@ -1,3 +1,11 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <dlfcn.h>
+#include <string.h>
+
+// types
+
 /**
  * @brief Type synonym for an address in the buffer.
  * @typedef unsigned int
@@ -56,7 +64,6 @@ struct addrr {
  */
 struct command {
 	char name; /// The letter that identifies the command, or NUL in the rare case that none is given.
-	//* some commands are more than one letter long, e.g. `wq`
 	struct addrr range; /// The range that the command acts upon, usually entered before the command name.
 	char *args; /// The extra arguments that the command may use, usually entered after the command name.
 };
@@ -65,3 +72,9 @@ struct parse_addr {
 	addr res;
 	char *cont;
 };
+
+// lib.c
+
+struct command parse_command(char *inp);
+
+void (*load(struct command comm))(/* TODO: put inputs in here */);
