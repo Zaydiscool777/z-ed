@@ -1,16 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dlfcn.h>
+#include <dlfcn.h> // note: use dlerror and put in ed error system
 #include <string.h>
+#include <ctype.h>
 
 // types
 
 /**
  * @brief Type synonym for an address in the buffer.
- * @typedef unsigned int
+ * @typedef int
  */
-typedef unsigned int addr;
+typedef int addr;
 
 /**
  * @struct line
@@ -68,13 +69,13 @@ struct command {
 	char *args; /// The extra arguments that the command may use, usually entered after the command name.
 };
 
-struct parse_addr {
-	addr res;
+// lib.c
+
+struct parse {
+	int ok;
 	char *cont;
 };
 
-// lib.c
+struct parse find_comm(char *inp);
 
-struct command parse_command(char *inp);
-
-void (*load(struct command comm))(/* TODO: put inputs in here */);
+void load(struct command comm);
