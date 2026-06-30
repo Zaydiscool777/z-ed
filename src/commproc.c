@@ -1,21 +1,35 @@
 #include "ed.h"
 
 int main() {
+	lib_init();
+
 	char *inp = NULL;
 	size_t len = 0;
-	char funcname[2] = "\0\0";
-	void (*func)(struct command);
 
 	while (1) {
-		ssize_t ret = getline(&inp, &len, stdin);
-		if (ret == -1) {
-			puts("eof.");
+		ssize_t len2 = getline(&inp, &len, stdin);
+		if (len2 == -1) {
+			puts("eof");
 			break;
 		}
-		printf("ok: %li\n", ret);
-		struct command comm = parse_command(inp);
-		load(comm);
+
+		struct parse ret = find_comm(inp);
+
+		if (ret.ok == PARSE_OK) {
+			struct command comm;
+			comm.range.start = 0; comm.range.end = 0;
+			comm.name = *ret.cont;
+			comm.args = ret.cont + 1;
+			load(comm); // TODO: support dlerror stuff
+		} else {
+			set_ed_error("Invalid ...");
+		}
+
+		free(inp);
+		inp = NULL;
+		len = 0;
 	}
 
-	return EXIT_SUCCESS;
+	free(inp);
+	lib_term();
 }

@@ -4,8 +4,9 @@
 #include <dlfcn.h> // note: use dlerror and put in ed error system
 #include <string.h>
 #include <ctype.h>
+#include <signal.h> // signal or sigaction?
 
-// types
+// # types
 
 /**
  * @brief Type synonym for an address in the buffer.
@@ -56,26 +57,67 @@ struct addrr {
 
 /**
  * @struct command
- * @brief Comand data that will be used to locate, execute, and provide inputs to commands.
- * @param name The letter that identifies the command, or NUL in the rare case that none is given.
+ * @brief Command data that will be used to locate, execute, and provide inputs to commands.
+ * @param name The letter that identifies the command, or NUL in the case that none is given.
  * @param range The range that the command acts upon, usually entered before the command name.
  * @param args The extra arguments that the command may use, usually entered after the command name.
  * @attention It is better to assign args to an empty string instead of NULL.
  * @example `1,3m2p` becomes `{'m', {1, 3}, "2p"}`.
  */
 struct command {
-	char name; /// The letter that identifies the command, or NUL in the rare case that none is given.
+	char name; /// The letter that identifies the command, or NUL in the case that none is given.
 	struct addrr range; /// The range that the command acts upon, usually entered before the command name.
 	char *args; /// The extra arguments that the command may use, usually entered after the command name.
 };
 
-// lib.c
-
+/**
+ * @struct parse
+ * @brief Result of parsing a command input line.
+ * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
+ * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
+ */
 struct parse {
-	int ok;
-	char *cont;
+	int ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
+	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
 };
 
+/**
+ * @brief Parse success of the `parse` struct.
+ * @enum PARSE
+ * @param PARSE_OK Success.
+ */
+enum PARSE {
+	PARSE_OK, /// Success.
+	PARSE_FAIL_GENERAL, /// General failure.
+	PARSE_UNEXPECTED_NUL, /// A NUL character was found when something else was expected.
+	PARSE_INVALID_MARK, /// A lowercase letter did not follow an apostrophe used to denote a mark address.
+	PARSE_UNEXPECTED_NEWLINE, /// A newline character was found when something else was expected.
+	PARSE_MAXVALUE /// Maximum value of the PARSE enumeration.
+};
+
+// # lib.c
+
+void lib_init(void);
+
+void lib_term(void);
+
+// command processing
+
+/**
+ * @fn find_comm
+ * @brief 
+ * 
+ * @param inp 
+ * @return struct parse 
+ */
 struct parse find_comm(char *inp);
 
 void load(struct command comm);
+
+// signal processing
+
+void sigint_handler(int signal);
+
+// idk
+
+void set_ed_error(char *s);

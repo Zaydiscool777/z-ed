@@ -1,10 +1,10 @@
 #include "ed.h"
 
-void d(char *inp) {
+void commasc_100(struct command comm) {
 	puts("d");
 }
 
-void c(char *inp) {
-	inp[1] = 'c';
-	puts(inp + 1); // two newlines
+void commasc_099(struct command comm) {
+	putc('c', stdout);
+	puts(comm.args + 1); // two newlines
 }
