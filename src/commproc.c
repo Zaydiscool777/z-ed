@@ -32,4 +32,5 @@ int main() {
 
 	free(inp);
 	lib_term();
+	return EXIT_SUCCESS;
 }

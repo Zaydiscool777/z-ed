@@ -5,16 +5,15 @@ char *ed_error;
 
 void lib_init(void) {
 	handle = dlopen("./libcomm.so", RTLD_LAZY);
-	signal(SIGINT, sigint_handler);
-}
-
-void sigint_handler(int signal) {
-	lib_term();
 }
 
 void lib_term(void) {
 	dlclose(handle);
-	exit(0);
+}
+
+void comm_exit(void) {
+	lib_term();
+	exit(EXIT_SUCCESS);
 }
 
 struct parse find_comm(char *inp) {
@@ -93,6 +92,10 @@ struct parse find_comm(char *inp) {
 			ret.cont++;
 		} else if (*ret.cont == '-') {
 			ret.cont++;
+		} else if (*ret.cont == ',') {
+			ret.cont++;
+		} else if (*ret.cont == ';') {
+			ret.cont++;
 		} else {
 			ret.ok = PARSE_OK;
 			break;
@@ -106,9 +109,9 @@ void set_ed_error(char *s) {
 	puts("?");
 }
 
-void load(struct command comm) {
+void load(struct command comm) { // TODO: support dlerror stuff
 	char buff[32];
 	snprintf(buff, 32, "commasc_%03i", (int)(comm.name));
 	void (*func)(struct command) = dlsym(handle, buff);
-	func(comm);
+	func(comm); // TODO: support dlerror stuff
 }

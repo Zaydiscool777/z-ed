@@ -4,7 +4,7 @@
 #include <dlfcn.h> // note: use dlerror and put in ed error system
 #include <string.h>
 #include <ctype.h>
-#include <signal.h> // signal or sigaction?
+// #include <signal.h> // signal or sigaction?
 
 // # types
 
@@ -97,6 +97,10 @@ enum PARSE {
 
 // # lib.c
 
+extern void *handle;
+
+extern char *ed_error;
+
 void lib_init(void);
 
 void lib_term(void);
@@ -114,10 +118,8 @@ struct parse find_comm(char *inp);
 
 void load(struct command comm);
 
-// signal processing
-
-void sigint_handler(int signal);
-
 // idk
 
 void set_ed_error(char *s);
+
+extern void comm_exit(void);
