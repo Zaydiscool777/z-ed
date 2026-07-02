@@ -17,6 +17,7 @@ typedef int addr;
 /**
  * @struct line
  * @brief Context and data of a textual line as an element in a doubly linked list.
+ * @param buffer Buffer the line resides in.
  * @param text Text in the line, or NULL if there is none.
  * @param next Pointer to the next line, or NULL if there is none.
  * @param prev Pointer to the previous line, or NULL if there is none.
@@ -24,6 +25,7 @@ typedef int addr;
  * @warning The text must be null-terminated, like the ones in C. This will be fixed in the future.
  */
 struct line {
+	struct buffer *buffer; /// Buffer the line resides in.
 	char *text; /// Text in the line, or NULL if there is none.
 	struct line *next; /// Pointer to the next line, or NULL if there is none.
 	struct line *prev; /// Pointer to the previous line, or NULL if there is none.
@@ -85,6 +87,11 @@ struct parse {
  * @brief Parse success of the `parse` struct.
  * @enum PARSE
  * @param PARSE_OK Success.
+ * @param PARSE_FAIL_GENERAL General failure.
+ * @param PARSE_UNEXPECTED_NUL A NUL character was found when something else was expected.
+ * @param PARSE_INVALID_MARK A lowercase letter did not follow an apostrophe used to denote a mark address.
+ * @param PARSE_UNEXPECTED_NEWLINE A newline character was found when something else was expected.
+ * @param PARSE_MAXVALUE Maximum value of the PARSE enumeration.
  */
 enum PARSE {
 	PARSE_OK, /// Success.
@@ -97,29 +104,32 @@ enum PARSE {
 
 // # lib.c
 
-extern void *handle;
-
-extern char *ed_error;
-
 void lib_init(void);
 
 void lib_term(void);
 
 // command processing
 
-/**
- * @fn find_comm
- * @brief 
- * 
- * @param inp 
- * @return struct parse 
- */
 struct parse find_comm(char *inp);
 
 void load(struct command comm);
 
-// idk
+extern void comm_exit(void);
+
+// error handling
+
+extern char *ed_error;
 
 void set_ed_error(char *s);
 
-extern void comm_exit(void);
+// line and buffer operations
+
+struct line *buffer_index(struct buffer buff, addr i);
+
+void line_insert_after(struct line *after, struct line *new);
+
+void line_insert_before(struct line *before, struct line *new);
+
+void line_delete(struct line *old);
+
+struct buffer buffer_read_file(char *fname);
