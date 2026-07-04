@@ -28,10 +28,15 @@ void commasc_101(struct command comm) {
 	reading = buffer_read_file(comm.args);
 }
 
+void commasc_097(struct command comm) {
+	reading = buffer_read_input();
+}
+
 void commasc_112(struct command comm) {
 	if (reading.head == NULL) {
 		set_ed_error("Invalid address (eof)");
+	} else {
+		fputs(reading.head->text, stdout);
+		reading.head = reading.head->next;
 	}
-	fputs(reading.head->text, stdout);
-	reading.head = reading.head->next;
 }

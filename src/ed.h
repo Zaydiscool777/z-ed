@@ -5,6 +5,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <signal.h> // especially Ctrl-D and Ctrl-C. use sigaction, not signal
+#include <regex.h>
 
 // # types
 
@@ -128,13 +129,13 @@ void set_ed_error(char *s);
 
 struct line *buffer_index(struct buffer buff, addr i);
 
-void buffer_insert_after(struct line *after, struct buffer *new);
+void buffer_insert_after(struct line *after, struct buffer *in, struct buffer *new);
 
-void buffer_insert_before(struct line *before, struct buffer *new);
+void buffer_insert_before(struct line *before, struct buffer *in, struct buffer *new);
 
-void buffer_remove(struct buffer *old);
+void buffer_remove(struct buffer *in, struct buffer *old);
 
-void buffer_delete(struct buffer *bad);
+void buffer_delete(struct buffer *in, struct buffer *bad);
 
 struct buffer buffer_read_file(char *fname);
 
