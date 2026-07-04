@@ -129,42 +129,60 @@ struct line *buffer_index(struct buffer buff, addr i) {
 	return p;
 }
 
-void line_insert_after(struct line *after, struct line *new) {
-	if (after->buffer == NULL) {
-		after->buffer->head = new;
-		new->buffer = after->buffer;
-	}
+// TODO: since lines could be at head or tail, add buffer of line as an argument, so that its head and tail can also be changed
+void buffer_insert_after(struct line *after, struct buffer *new) {
 	struct line *a = after->next;
-	new->prev = after;
-	new->next = a;
-	after->next = new;
-	if (a != NULL) {
-		a->prev = new;
+	if (new->head == NULL) {
+		return;
 	}
-	new->buffer = after->buffer;
+	after->next = new->head;
+	new->head->prev = after;
+	if (a != NULL) {
+		a->prev = new->tail;
+		new->tail->next = a;
+	}
 }
 
-void line_insert_before(struct line *before, struct line *new) {
+// TODO: since lines could be at head or tail, add buffer of line as an argument, so that its head and tail can also be changed
+void buffer_insert_before(struct line *before, struct buffer *new) {
 	struct line *a = before->prev;
-	new->next = before;
-	new->prev = a;
-	before->prev = new;
-	if (a != NULL) {
-		a->next = new;
+	if (new->head == NULL) {
+		return;
 	}
-	new->buffer = before->buffer;
+	before->prev = new->tail;
+	new->tail->next = before;
+	if (a != NULL) {
+		a->next = new->head;
+		new->head->prev = a;
+	}
 }
 
-void line_delete(struct line *old) {
-	struct line *a = old->prev;
-	struct line *b = old->next;
+// TODO: since lines could be at head or tail, add buffer of line as an argument, so that its head and tail can also be changed
+void buffer_remove(struct buffer *old) {
+	struct line *a = old->head->prev;
+	struct line *b = old->tail->next;
 	if (a != NULL) {
 		a->next = b;
 	}
 	if (b != NULL) {
 		b->prev = a;
 	}
-	old->buffer = NULL;
+}
+
+// TODO: since lines could be at head or tail, add buffer of line as an argument, so that its head and tail can also be changed
+void buffer_delete(struct buffer *bad) {
+	buffer_remove(bad);
+	struct line *del = bad->head;
+	if (del == NULL) {
+		return;
+	}
+	while (del != bad->tail) {
+		free(del->text);
+		free(del);
+		del = del->next;
+	}
+	bad->head = NULL;
+	bad->tail = NULL;
 }
 
 struct buffer buffer_read_file(char *fname) {
@@ -173,26 +191,66 @@ struct buffer buffer_read_file(char *fname) {
 	struct line *write;
 	if (!feof(file)) {
 		write = malloc(sizeof(struct line));
-		write->buffer = &ret;
 		write->next = NULL;
 		write->prev = NULL;
+		char *inp;
 		size_t len; // TODO: perhaps do something with this if line gets a len member
-		getline(&write->text, &len, file);
+		getline(&inp, &len, file);
+		write->text = inp;
 		ret.head = write;
 	} else {
 		ret.head = NULL;
+		ret.tail = NULL;
 		return ret;
 	}
 	struct line *a;
 	while (!feof(file)) {
 		a = write;
 		write = malloc(sizeof(struct line));
-		write->buffer = &ret;
 		write->next = NULL;
 		write->prev = a;
 		a->next = write;
+		char *inp;
 		size_t len; // TODO: perhaps do something with this if line gets a len member
-		getline(&write->text, &len, file);
+		getline(&inp, &len, file);
+		write->text = inp;
 	}
+	ret.tail = write;
+	return ret;
+}
+
+struct buffer buffer_read_input(void) {
+	struct buffer ret;
+	struct line *write;
+	char *inp;
+	size_t len; // TODO: perhaps do something with this if line gets a len member
+	ssize_t len2 = getline(&inp, &len, stdin);
+	if (strcmp(inp, ".\n") == 0) {
+		ret.head = NULL;
+		ret.tail = NULL;
+		return ret;
+	} else {
+		write = malloc(sizeof(struct line));
+		ret.head = write;
+		write->text = inp;
+		write->prev = NULL;
+		write->next = NULL;
+	}
+	int eof = 0;
+	struct line *a;
+	while (!eof) {
+		ssize_t len2 = getline(&inp, &len, stdin);
+		if (strcmp(inp, ".\n") == 0) {
+			return;
+		} else {
+			a = write;
+			write = malloc(sizeof(struct line));
+			write->text = inp;
+			write->prev = a;
+			a->next = write;
+			write->next = NULL;
+		}
+	}
+	ret.tail = write;
 	return ret;
 }

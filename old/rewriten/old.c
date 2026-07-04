@@ -333,7 +333,7 @@ void copy_line(struct line* dest, struct line* src){ // todo
 
 
 
-/* i am rewriting ed*/
+/* i am rewriting ed */
 #include<stdio.h>
-char*s="#include<stdio.h>%cchar*s=%c%s%c;%cint main(){printf(s,10,34,s,34,10);}";
-int main(){printf(s,10,34,s,34,10);}
+char*s="/* i am rewriting ed */%c#include<stdio.h>%cchar*s=%c%s%c;%cint main(){printf(s,10,10,34,s,34,10);}";
+int main(){printf(s,10,10,34,s,34,10);}

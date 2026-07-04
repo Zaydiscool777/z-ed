@@ -4,7 +4,7 @@
 #include <dlfcn.h> // note: use dlerror and put in ed error system
 #include <string.h>
 #include <ctype.h>
-// #include <signal.h> // signal or sigaction?
+#include <signal.h> // especially Ctrl-D and Ctrl-C. use sigaction, not signal
 
 // # types
 
@@ -17,15 +17,14 @@ typedef int addr;
 /**
  * @struct line
  * @brief Context and data of a textual line as an element in a doubly linked list.
- * @param buffer Buffer the line resides in.
  * @param text Text in the line, or NULL if there is none.
  * @param next Pointer to the next line, or NULL if there is none.
  * @param prev Pointer to the previous line, or NULL if there is none.
- * @deprecated idx used to be the index of the line in the buffer, or 0 if lacking a proper one.
+ * @deprecated `idx` used to be the index of the line in the buffer, or 0 if lacking a proper one.
+ * @deprecated `buffer` used to be the buffer the line resides in.
  * @warning The text must be null-terminated, like the ones in C. This will be fixed in the future.
  */
 struct line {
-	struct buffer *buffer; /// Buffer the line resides in.
 	char *text; /// Text in the line, or NULL if there is none.
 	struct line *next; /// Pointer to the next line, or NULL if there is none.
 	struct line *prev; /// Pointer to the previous line, or NULL if there is none.
@@ -35,11 +34,14 @@ struct line {
  * @struct buffer
  * @brief Context and data of a textual buffer that holds all of its lines.
  * @param head Pointer to the first line in the buffer.
+ * @param tail Pointer to the last line of the buffer.
  * @deprecated `array` used to be a list of lines as an array.
- * @remark Perhaps `tail` and `size` can also be added.
+ * @remark Perhaps `size` can also be added.
+ * @note If the buffer is empty, both `head` and `tail` should be NULL. Usually, `head` is checked for this.
  */
 struct buffer {
-	struct line *head; /// Pointer to the first line in the buffer.
+	struct line *head; /// Pointer to the first line of the buffer.
+	struct line *tail; /// Pointer to the last line of the buffer.
 };
 
 /**
@@ -126,10 +128,14 @@ void set_ed_error(char *s);
 
 struct line *buffer_index(struct buffer buff, addr i);
 
-void line_insert_after(struct line *after, struct line *new);
+void buffer_insert_after(struct line *after, struct buffer *new);
 
-void line_insert_before(struct line *before, struct line *new);
+void buffer_insert_before(struct line *before, struct buffer *new);
 
-void line_delete(struct line *old);
+void buffer_remove(struct buffer *old);
+
+void buffer_delete(struct buffer *bad);
 
 struct buffer buffer_read_file(char *fname);
+
+struct buffer buffer_read_input(void);
