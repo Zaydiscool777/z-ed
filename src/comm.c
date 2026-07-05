@@ -1,7 +1,5 @@
 #include "ed.h"
 
-struct buffer reading;
-
 void commasc_100(struct command comm) {
 	puts("d");
 }
@@ -25,18 +23,18 @@ void commasc_104(struct command comm) {
 
 void commasc_101(struct command comm) {
 	comm.args[strlen(comm.args) - 1] = '\0';
-	reading = buffer_read_file(comm.args);
+	current_buffer = buffer_read_file(comm.args);
 }
 
 void commasc_097(struct command comm) {
-	reading = buffer_read_input();
+	current_buffer = buffer_read_input();
 }
 
 void commasc_112(struct command comm) {
-	if (reading.head == NULL) {
+	if (current_buffer.head == NULL) {
 		set_ed_error("Invalid address (eof)");
 	} else {
-		fputs(reading.head->text, stdout);
-		reading.head = reading.head->next;
+		fputs(current_buffer.head->text, stdout);
+		current_buffer.head = current_buffer.head->next;
 	}
 }

@@ -140,3 +140,35 @@ void buffer_delete(struct buffer *in, struct buffer *bad);
 struct buffer buffer_read_file(char *fname);
 
 struct buffer buffer_read_input(void);
+
+struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *match);
+
+struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *match);
+
+// # standard ed
+
+// variables
+
+int help_mode;
+
+int ran_global_comm;
+
+int mod_buffer;
+
+struct buffer current_buffer;
+
+struct buffer undo;
+
+struct buffer cut;
+
+char *filename;
+
+char *last_regex_f;
+
+addr marks[26];
+
+char *last_shell_esc;
+
+int window_size;
+
+addr current_addr;

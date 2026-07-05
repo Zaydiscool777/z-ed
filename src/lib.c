@@ -260,3 +260,32 @@ struct buffer buffer_read_input(void) {
 	return ret;
 }
 
+// assumptions: cflags has REG_NEWLINE and not REG_NOSUB.
+struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *match) {
+	struct line *read = at;
+	regmatch_t captures[10];
+	while (read != in.tail) {
+		int x = regexec(match, read->text, 10, captures, 0);
+		if (x == 0) {
+			return read;
+		} else {
+			read = read->next;
+		}
+	}
+	return NULL;
+}
+
+// assumptions: cflags has REG_NEWLINE and not REG_NOSUB.
+struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *match) {
+	struct line *read = at;
+	regmatch_t captures[10];
+	while (read != in.head) {
+		int x = regexec(match, read->text, 10, captures, 0);
+		if (x == 0) {
+			return read;
+		} else {
+			read = read->prev;
+		}
+	}
+	return NULL;
+}
