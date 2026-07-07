@@ -12,8 +12,11 @@
 /**
  * @brief Type synonym for an address in the buffer.
  * @typedef int
+ * @note An address can be made invalid by setting it to `INV_ADDR`.
  */
 typedef int addr;
+
+const addr INV_ADDR = -1;
 
 /**
  * @struct line
@@ -119,12 +122,6 @@ void load(struct command comm);
 
 extern void comm_exit(void);
 
-// error handling
-
-extern char *ed_error;
-
-void set_ed_error(char *s);
-
 // line and buffer operations
 
 struct line *buffer_index(struct buffer buff, addr i);
@@ -163,7 +160,7 @@ struct buffer cut;
 
 char *filename;
 
-char *last_regex_f;
+char *last_regex;
 
 addr marks[26];
 
@@ -172,3 +169,8 @@ char *last_shell_esc;
 int window_size;
 
 addr current_addr;
+
+extern char *ed_error;
+
+
+void set_ed_error(char *s);

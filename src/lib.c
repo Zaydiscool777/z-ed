@@ -1,7 +1,6 @@
 #include "ed.h"
 
 void *handle;
-char *ed_error;
 
 void lib_init(void) {
 	handle = dlopen("./libcomm.so", RTLD_LAZY);
@@ -29,9 +28,7 @@ struct parse find_comm(char *inp) {
 		} else if (*ret.cont == '$') {
 			ret.cont++;
 		} else if (isdigit(*ret.cont)) {
-			while (isdigit(*ret.cont)) {
-				ret.cont++;
-			}
+			ret.cont++;
 		} else if (*ret.cont == '\'') {
 			ret.cont++;
 			if (islower(*ret.cont)) {
@@ -96,7 +93,7 @@ struct parse find_comm(char *inp) {
 			ret.cont++;
 		} else if (*ret.cont == ';') {
 			ret.cont++;
-		} else if (*ret.cont == ' ') {
+		} else if (isblank(*ret.cont)) {
 			ret.cont++;
 		} else {
 			ret.ok = PARSE_OK;
@@ -116,6 +113,9 @@ void load(struct command comm) { // TODO: support dlerror stuff
 void set_ed_error(char *s) {
 	ed_error = s;
 	puts("?");
+	if (help_mode) {
+		puts(ed_error);
+	}
 }
 
 struct line *buffer_index(struct buffer buff, addr i) {
@@ -127,6 +127,17 @@ struct line *buffer_index(struct buffer buff, addr i) {
 		p = p->next;
 	}
 	return p;
+}
+
+addr buffer_find(struct buffer buff, struct line *i) {
+	if (i == NULL) {
+		return -1;
+	}
+	struct line *p = buff.head;
+	for (addr n = 1; p != i; n++) {
+		p = p->next;
+	}
+
 }
 
 void buffer_insert_after(struct line *after, struct buffer *in, struct buffer *new) {
@@ -288,4 +299,150 @@ struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *
 		}
 	}
 	return NULL;
+}
+
+addr parse_one_address(char *inp) {
+	addr ret = 0;
+	char *cont = inp;
+	while (1) {
+		if (*cont == '\0') {
+			return INV_ADDR;
+		} else if (*cont == '.') {
+			ret = current_addr;
+			cont++;
+		} else if (*cont == '$') {
+			ret = buffer_find(current_buffer, current_buffer.tail);
+			cont++;
+		} else if (isdigit(*cont)) {
+			char *a = cont;
+			while (isdigit(a)) {
+				a++;
+			}
+			char *x = strndup(cont, a - cont);
+			ret += atoi(x);
+			free(x);
+		} else if (*cont == '\'') {
+			cont++;
+			if (islower(*cont)) {
+				ret = marks[*cont - 'a'];
+				cont++;
+			} else {
+				return INV_ADDR;
+			}
+		} else if (*cont == '/') {
+			cont++;
+			char *a = cont;
+			int esc = 0;
+			while (*a != '\0' && *a != '\n') {
+				if (esc) {
+					esc = 0;
+					a++;
+				} else {
+					if (*a = '\\') {
+						esc = 1;
+					} else if (*a == '/') {
+						a++;
+						break;
+					}
+					a++;
+				}
+			}
+			if (*a == '\n') {
+				return INV_ADDR;
+			} else {
+				a--;
+				char *x = strndup(cont, a - cont);
+				regex_t r;
+				regcomp(&r, x, 0);
+				struct line *here = buffer_index(current_buffer, current_addr);
+				if (here == NULL) {
+					return INV_ADDR;
+				}
+				struct line *there = buffer_search_forward(current_buffer, here, &r);
+				return buffer_index(current_buffer, there);
+			}
+		} else if (*cont == '?') {
+			cont++;
+			char *a = cont;
+			int esc = 0;
+			while (*a != '\0' && *a != '\n') {
+				if (esc) {
+					esc = 0;
+					a++;
+				} else {
+					if (*a = '\\') {
+						esc = 1;
+					} else if (*a == '?') {
+						a++;
+						break;
+					}
+					a++;
+				}
+			}
+			if (*a == '\n') {
+				return INV_ADDR;
+			} else {
+				a--;
+				char *x = strndup(cont, a - cont);
+				regex_t r;
+				regcomp(&r, x, 0);
+				struct line *here = buffer_index(current_buffer, current_addr);
+				if (here == NULL) {
+					return INV_ADDR;
+				}
+				struct line *there = buffer_search_backward(current_buffer, here, &r);
+				return buffer_index(current_buffer, there);
+			}
+		} else if (*cont == '+') {
+			char *a = cont;
+			a++;
+			while (isblank(*a)) {
+				a++;
+			}
+			if (isdigit(*a)) {
+				char *b = a;
+				while (isdigit(b)) {
+					b++;
+				}
+				char *x = strndup(a, b - a);
+				ret += atoi(x);
+				free(x);
+			} else {
+				cont = a;
+				ret++;
+			}
+		} else if (*cont == '-') {
+			char *a = cont;
+			a++;
+			while (isblank(*a)) {
+				a++;
+			}
+			if (isdigit(*a)) {
+				char *b = a;
+				while (isdigit(b)) {
+					b++;
+				}
+				char *x = strndup(a, b - a);
+				ret -= atoi(x);
+				free(x);
+			} else {
+				cont = a;
+				ret--;
+			}
+		} else if (*cont == ',') {
+			char *a = cont;
+			a++;
+			while (isblank(*a)) {
+				a++;
+			}
+			if () {
+
+			} else {
+				
+			}
+		} else if (*cont == ';') {
+			cont++;
+		}
+	
+	}
 }
