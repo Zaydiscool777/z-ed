@@ -170,7 +170,10 @@ int window_size;
 
 addr current_addr;
 
-extern char *ed_error;
+char *ed_error;
 
+// misc
 
 void set_ed_error(char *s);
+
+addr parse_one_address(char *inp);

@@ -302,29 +302,39 @@ struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *
 }
 
 addr parse_one_address(char *inp) {
-	addr ret = 0;
+	addr ret = current_addr;
 	char *cont = inp;
+	int init = 0;
 	while (1) {
 		if (*cont == '\0') {
-			return INV_ADDR;
+			return ret;
 		} else if (*cont == '.') {
 			ret = current_addr;
+			init = 1;
 			cont++;
 		} else if (*cont == '$') {
 			ret = buffer_find(current_buffer, current_buffer.tail);
+			init = 1;
 			cont++;
 		} else if (isdigit(*cont)) {
 			char *a = cont;
-			while (isdigit(a)) {
+			while (isdigit(*a)) {
 				a++;
 			}
 			char *x = strndup(cont, a - cont);
-			ret += atoi(x);
+			if (init) {
+				ret += atoi(x);
+			} else {
+				ret = atoi(x);
+				init = 1;
+			}
+			cont = a;
 			free(x);
 		} else if (*cont == '\'') {
 			cont++;
 			if (islower(*cont)) {
 				ret = marks[*cont - 'a'];
+				init = 1;
 				cont++;
 			} else {
 				return INV_ADDR;
@@ -347,20 +357,19 @@ addr parse_one_address(char *inp) {
 					a++;
 				}
 			}
-			if (*a == '\n') {
+			a--;
+			char *x = strndup(cont, a - cont);
+			regex_t r;
+			regcomp(&r, x, 0);
+			struct line *here = buffer_index(current_buffer, current_addr);
+			if (here == NULL) {
 				return INV_ADDR;
-			} else {
-				a--;
-				char *x = strndup(cont, a - cont);
-				regex_t r;
-				regcomp(&r, x, 0);
-				struct line *here = buffer_index(current_buffer, current_addr);
-				if (here == NULL) {
-					return INV_ADDR;
-				}
-				struct line *there = buffer_search_forward(current_buffer, here, &r);
-				return buffer_index(current_buffer, there);
 			}
+			struct line *there = buffer_search_forward(current_buffer, here, &r);
+			ret = buffer_find(current_buffer, there);
+			init = 1;
+			a++;
+			cont = a;
 		} else if (*cont == '?') {
 			cont++;
 			char *a = cont;
@@ -379,20 +388,19 @@ addr parse_one_address(char *inp) {
 					a++;
 				}
 			}
-			if (*a == '\n') {
+			a--;
+			char *x = strndup(cont, a - cont);
+			regex_t r;
+			regcomp(&r, x, 0);
+			struct line *here = buffer_index(current_buffer, current_addr);
+			if (here == NULL) {
 				return INV_ADDR;
-			} else {
-				a--;
-				char *x = strndup(cont, a - cont);
-				regex_t r;
-				regcomp(&r, x, 0);
-				struct line *here = buffer_index(current_buffer, current_addr);
-				if (here == NULL) {
-					return INV_ADDR;
-				}
-				struct line *there = buffer_search_backward(current_buffer, here, &r);
-				return buffer_index(current_buffer, there);
 			}
+			struct line *there = buffer_search_backward(current_buffer, here, &r);
+			ret = buffer_find(current_buffer, there);
+			init = 1;
+			a++;
+			cont = a;
 		} else if (*cont == '+') {
 			char *a = cont;
 			a++;
@@ -401,7 +409,7 @@ addr parse_one_address(char *inp) {
 			}
 			if (isdigit(*a)) {
 				char *b = a;
-				while (isdigit(b)) {
+				while (isdigit(*b)) {
 					b++;
 				}
 				char *x = strndup(a, b - a);
@@ -411,6 +419,7 @@ addr parse_one_address(char *inp) {
 				cont = a;
 				ret++;
 			}
+			init = 1;
 		} else if (*cont == '-') {
 			char *a = cont;
 			a++;
@@ -419,7 +428,7 @@ addr parse_one_address(char *inp) {
 			}
 			if (isdigit(*a)) {
 				char *b = a;
-				while (isdigit(b)) {
+				while (isdigit(*b)) {
 					b++;
 				}
 				char *x = strndup(a, b - a);
@@ -429,20 +438,29 @@ addr parse_one_address(char *inp) {
 				cont = a;
 				ret--;
 			}
+			init = 1;
 		} else if (*cont == ',') {
 			char *a = cont;
 			a++;
 			while (isblank(*a)) {
 				a++;
 			}
-			if () {
-
+			if (*cont == '\0') {
+				return ret;
 			} else {
-				
+				ret = current_addr;
+				init = 0;
+				cont = a;
 			}
 		} else if (*cont == ';') {
+			init = 0;
 			cont++;
+		} else {
+			return ret;
 		}
-	
 	}
+}
+
+struct addrr parse_two_address(char *inp) {
+
 }

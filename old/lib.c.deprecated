@@ -1,10 +1,10 @@
-#include "../src/ed.h"
+#include "ed.h"
 
 void line_insert_after(struct line *after, struct line *new) {
-	/* if (after->buffer == NULL) {
+	if (after->buffer == NULL) {
 		after->buffer->head = new;
 		new->buffer = after->buffer;
-	} */
+	}
 	struct line *a = after->next;
 	new->prev = after;
 	new->next = a;
@@ -12,7 +12,7 @@ void line_insert_after(struct line *after, struct line *new) {
 	if (a != NULL) {
 		a->prev = new;
 	}
-	// new->buffer = after->buffer;
+	new->buffer = after->buffer;
 }
 
 void line_insert_before(struct line *before, struct line *new) {
@@ -23,7 +23,7 @@ void line_insert_before(struct line *before, struct line *new) {
 	if (a != NULL) {
 		a->next = new;
 	}
-	// new->buffer = before->buffer;
+	new->buffer = before->buffer;
 }
 
 void line_delete(struct line *old) {
@@ -35,5 +35,5 @@ void line_delete(struct line *old) {
 	if (b != NULL) {
 		b->prev = a;
 	}
-	// old->buffer = NULL;
+	old->buffer = NULL;
 }

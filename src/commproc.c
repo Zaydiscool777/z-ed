@@ -20,6 +20,10 @@ int main() {
 			comm.range.start = 0; comm.range.end = 0;
 			comm.name = *ret.cont;
 			comm.args = ret.cont + 1;
+
+			char *x = strndup(inp, ret.cont - inp);
+			printf("%i\n", parse_one_address(x));
+
 			load(comm); // TODO: support dlerror stuff
 		} else {
 			set_ed_error("Invalid ...");
