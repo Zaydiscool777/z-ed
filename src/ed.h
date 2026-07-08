@@ -15,7 +15,6 @@
  * @note An address can be made invalid by setting it to `INV_ADDR`.
  */
 typedef int addr;
-
 const addr INV_ADDR = -1;
 
 /**
@@ -90,7 +89,33 @@ struct parse {
 };
 
 /**
- * @brief Parse success of the `parse` struct.
+ * @struct parse_addr
+ * @brief Result of parsing a command input line for an address.
+ * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
+ * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
+ * @param d The address parsed, if it succeeds.
+ */
+struct parse_addr {
+	int ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
+	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
+	addr d; /// The address parsed, if it succeeds.
+};
+
+/**
+ * @struct parse_addrr
+ * @brief Result of parsing a command input line for an address range.
+ * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
+ * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
+ * @param d The address range parsed, if it succeeds.
+ */
+struct parse_addrr {
+	int ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
+	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
+	struct addrr d; /// The address range parsed, if it succeeds.
+};
+
+/**
+ * @brief Parse success of the `parse` struct and its variants.
  * @enum PARSE
  * @param PARSE_OK Success.
  * @param PARSE_FAIL_GENERAL General failure.
@@ -105,6 +130,7 @@ enum PARSE {
 	PARSE_UNEXPECTED_NUL, /// A NUL character was found when something else was expected.
 	PARSE_INVALID_MARK, /// A lowercase letter did not follow an apostrophe used to denote a mark address.
 	PARSE_UNEXPECTED_NEWLINE, /// A newline character was found when something else was expected.
+	PARSE_REGEX_NO_MATCHES,
 	PARSE_MAXVALUE /// Maximum value of the PARSE enumeration.
 };
 
@@ -176,4 +202,4 @@ char *ed_error;
 
 void set_ed_error(char *s);
 
-addr parse_one_address(char *inp);
+struct parse_addr parse_one_address(char *inp);

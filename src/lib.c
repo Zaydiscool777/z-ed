@@ -134,10 +134,11 @@ addr buffer_find(struct buffer buff, struct line *i) {
 		return -1;
 	}
 	struct line *p = buff.head;
-	for (addr n = 1; p != i; n++) {
+	addr n;
+	for (n = 1; p != i; n++) {
 		p = p->next;
 	}
-
+	return n;
 }
 
 void buffer_insert_after(struct line *after, struct buffer *in, struct buffer *new) {
@@ -301,54 +302,46 @@ struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *
 	return NULL;
 }
 
-addr parse_one_address(char *inp) {
-	addr ret = current_addr;
-	char *cont = inp;
-	int init = 0;
+struct parse_addr parse_one_address(char *inp) {
+	struct parse_addr ret;
+	ret.ok = PARSE_FAIL_GENERAL;
+	ret.cont = inp;
+	ret.d = current_addr;
 	while (1) {
-		if (*cont == '\0') {
+		if (*ret.cont == '\0') {
+			ret.ok = PARSE_OK;
 			return ret;
-		} else if (*cont == '.') {
-			ret = current_addr;
-			init = 1;
-			cont++;
-		} else if (*cont == '$') {
-			ret = buffer_find(current_buffer, current_buffer.tail);
-			init = 1;
-			cont++;
-		} else if (isdigit(*cont)) {
-			char *a = cont;
+		} else if (*ret.cont == '.') {
+			ret.d = buffer_find(current_buffer, current_buffer.tail);
+			ret.cont++;
+		} else if (isdigit(*ret.cont)) {
+			char *a = ret.cont;
 			while (isdigit(*a)) {
 				a++;
 			}
-			char *x = strndup(cont, a - cont);
-			if (init) {
-				ret += atoi(x);
-			} else {
-				ret = atoi(x);
-				init = 1;
-			}
-			cont = a;
+			char *x = strndup(ret.cont, a - ret.cont);
+			ret.d += atoi(x);
+			ret.cont = a;
 			free(x);
-		} else if (*cont == '\'') {
-			cont++;
-			if (islower(*cont)) {
-				ret = marks[*cont - 'a'];
-				init = 1;
-				cont++;
+		} else if (*ret.cont == '\'') {
+			ret.cont++;
+			if (islower(*ret.cont)) {
+				ret.d = marks[*ret.cont - 'a'];
+				ret.cont++;
 			} else {
-				return INV_ADDR;
+				ret.ok = PARSE_INVALID_MARK;
+				return ret;
 			}
-		} else if (*cont == '/') {
-			cont++;
-			char *a = cont;
+		} else if (*ret.cont == '/') {
+			ret.cont++;
+			char *a = ret.cont;
 			int esc = 0;
 			while (*a != '\0' && *a != '\n') {
 				if (esc) {
 					esc = 0;
 					a++;
 				} else {
-					if (*a = '\\') {
+					if (*a == '\\') {
 						esc = 1;
 					} else if (*a == '/') {
 						a++;
@@ -358,21 +351,21 @@ addr parse_one_address(char *inp) {
 				}
 			}
 			a--;
-			char *x = strndup(cont, a - cont);
+			char *x = strndup(ret.cont, a - ret.cont);
 			regex_t r;
 			regcomp(&r, x, 0);
 			struct line *here = buffer_index(current_buffer, current_addr);
 			if (here == NULL) {
-				return INV_ADDR;
+				ret.ok = PARSE_REGEX_NO_MATCHES;
+				return ret;
 			}
 			struct line *there = buffer_search_forward(current_buffer, here, &r);
-			ret = buffer_find(current_buffer, there);
-			init = 1;
+			ret.d = buffer_find(current_buffer, there);
 			a++;
-			cont = a;
-		} else if (*cont == '?') {
-			cont++;
-			char *a = cont;
+			ret.cont = a;
+		} else if (*ret.cont == '?') {
+			ret.cont++;
+			char *a = ret.cont;
 			int esc = 0;
 			while (*a != '\0' && *a != '\n') {
 				if (esc) {
@@ -389,39 +382,20 @@ addr parse_one_address(char *inp) {
 				}
 			}
 			a--;
-			char *x = strndup(cont, a - cont);
+			char *x = strndup(ret.cont, a - ret.cont);
 			regex_t r;
 			regcomp(&r, x, 0);
 			struct line *here = buffer_index(current_buffer, current_addr);
 			if (here == NULL) {
-				return INV_ADDR;
+				ret.ok = PARSE_REGEX_NO_MATCHES;
+				return ret;
 			}
 			struct line *there = buffer_search_backward(current_buffer, here, &r);
-			ret = buffer_find(current_buffer, there);
-			init = 1;
+			ret.d = buffer_find(current_buffer, there);
 			a++;
-			cont = a;
-		} else if (*cont == '+') {
-			char *a = cont;
-			a++;
-			while (isblank(*a)) {
-				a++;
-			}
-			if (isdigit(*a)) {
-				char *b = a;
-				while (isdigit(*b)) {
-					b++;
-				}
-				char *x = strndup(a, b - a);
-				ret += atoi(x);
-				free(x);
-			} else {
-				cont = a;
-				ret++;
-			}
-			init = 1;
-		} else if (*cont == '-') {
-			char *a = cont;
+			ret.cont = a;
+		} else if (*ret.cont == '+') {
+			char *a = ret.cont;
 			a++;
 			while (isblank(*a)) {
 				a++;
@@ -432,30 +406,38 @@ addr parse_one_address(char *inp) {
 					b++;
 				}
 				char *x = strndup(a, b - a);
-				ret -= atoi(x);
+				ret.d += atoi(x);
 				free(x);
 			} else {
-				cont = a;
-				ret--;
+				ret.d++;
 			}
-			init = 1;
-		} else if (*cont == ',') {
-			char *a = cont;
+			ret.cont = a;
+		} else if (*ret.cont == '-') {
+			char *a = ret.cont;
 			a++;
 			while (isblank(*a)) {
 				a++;
 			}
-			if (*cont == '\0') {
-				return ret;
+			if (isdigit(*a)) {
+				char *b = a;
+				while (isdigit(*b)) {
+					b++;
+				}
+				char *x = strndup(a, b - a);
+				ret.d -= atoi(x);
+				free(x);
 			} else {
-				ret = current_addr;
-				init = 0;
-				cont = a;
+				ret.d--;
 			}
-		} else if (*cont == ';') {
-			init = 0;
-			cont++;
+			ret.cont = a;
+		} else if (*ret.cont == ',') {
+			ret.ok = PARSE_OK;
+			return ret;
+		} else if (*ret.cont == ';') {
+			ret.ok = PARSE_OK;
+			return ret;
 		} else {
+			ret.ok = PARSE_OK;
 			return ret;
 		}
 	}

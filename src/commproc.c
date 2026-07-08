@@ -3,6 +3,8 @@
 int main() {
 	lib_init();
 
+	current_addr = 1;
+
 	char *inp = NULL;
 	size_t len = 0;
 
@@ -22,7 +24,8 @@ int main() {
 			comm.args = ret.cont + 1;
 
 			char *x = strndup(inp, ret.cont - inp);
-			printf("%i\n", parse_one_address(x));
+			struct parse_addr y = parse_one_address(x);
+			printf("%i %i\n", y.ok, y.d);
 
 			load(comm); // TODO: support dlerror stuff
 		} else {
