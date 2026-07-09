@@ -14,7 +14,11 @@ void commasc_113(struct command comm) {
 }
 
 void commasc_010(struct command comm) {
-	
+	if (comm.range.end == INV_ADDR) {
+		set_ed_error("Invalid address");
+	} else {
+		current_addr = comm.range.end;
+	}
 }
 
 void commasc_104(struct command comm) {
@@ -31,10 +35,9 @@ void commasc_097(struct command comm) {
 }
 
 void commasc_112(struct command comm) {
-	if (current_buffer.head == NULL) {
-		set_ed_error("Invalid address (eof)");
+	if (comm.range.end == INV_ADDR) {
+		set_ed_error("Invalid address");
 	} else {
-		fputs(current_buffer.head->text, stdout);
-		current_buffer.head = current_buffer.head->next;
+		fputs(buffer_index(current_buffer, comm.range.end)->text, stdout);
 	}
 }
