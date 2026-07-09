@@ -202,4 +202,6 @@ char *ed_error;
 
 void set_ed_error(char *s);
 
-struct parse_addr parse_one_address(char *inp);
+struct parse_addr parse_one_address(char *inp, addr start);
+
+struct parse_addrr parse_two_address(char *inp);

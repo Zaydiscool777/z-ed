@@ -302,16 +302,19 @@ struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *
 	return NULL;
 }
 
-struct parse_addr parse_one_address(char *inp) {
+struct parse_addr parse_one_address(char *inp, addr start) {
 	struct parse_addr ret;
 	ret.ok = PARSE_FAIL_GENERAL;
 	ret.cont = inp;
-	ret.d = current_addr;
+	ret.d = start;
 	while (1) {
 		if (*ret.cont == '\0') {
 			ret.ok = PARSE_OK;
 			return ret;
 		} else if (*ret.cont == '.') {
+			ret.d = current_addr;
+			ret.cont++;
+		} else if (*ret.cont == '$') {
 			ret.d = buffer_find(current_buffer, current_buffer.tail);
 			ret.cont++;
 		} else if (isdigit(*ret.cont)) {
@@ -320,6 +323,9 @@ struct parse_addr parse_one_address(char *inp) {
 				a++;
 			}
 			char *x = strndup(ret.cont, a - ret.cont);
+			if (ret.d == INV_ADDR) {
+				ret.d = 0;
+			}
 			ret.d += atoi(x);
 			ret.cont = a;
 			free(x);
@@ -406,9 +412,15 @@ struct parse_addr parse_one_address(char *inp) {
 					b++;
 				}
 				char *x = strndup(a, b - a);
+				if (ret.d == INV_ADDR) {
+					ret.d = current_addr;
+				}
 				ret.d += atoi(x);
 				free(x);
 			} else {
+				if (ret.d == INV_ADDR) {
+					ret.d = current_addr;
+				}
 				ret.d++;
 			}
 			ret.cont = a;
@@ -424,9 +436,15 @@ struct parse_addr parse_one_address(char *inp) {
 					b++;
 				}
 				char *x = strndup(a, b - a);
+				if (ret.d == INV_ADDR) {
+					ret.d = current_addr;
+				}
 				ret.d -= atoi(x);
 				free(x);
 			} else {
+				if (ret.d == INV_ADDR) {
+					ret.d = current_addr;
+				}
 				ret.d--;
 			}
 			ret.cont = a;
@@ -443,6 +461,86 @@ struct parse_addr parse_one_address(char *inp) {
 	}
 }
 
-struct addrr parse_two_address(char *inp) {
-
+struct parse_addrr parse_two_address(char *inp) {
+	struct parse_addrr ret;
+	ret.ok = PARSE_FAIL_GENERAL;
+	ret.cont = inp;
+	ret.d.start = INV_ADDR;
+	ret.d.end = INV_ADDR;
+	int semi = 0;
+	addr ult = INV_ADDR;
+	addr penult = INV_ADDR;
+	int on = 0;
+	struct parse_addr x;
+	while (1) {
+		if (*ret.cont == '\0') {
+			ret.ok = PARSE_OK;
+			break;
+		}
+		if (semi) {
+			x = parse_one_address(ret.cont, ult);
+		} else {
+			x = parse_one_address(ret.cont, INV_ADDR);
+		}
+		if (x.ok != PARSE_OK) {
+			ret.ok = x.ok;
+			break;
+		}
+		if (on = 0) {
+			penult = x.d;
+			on = 1;
+		} else if (on == 1) {
+			ult = x.d;
+			on = 2;
+		} else {
+			penult = ult;
+			ult = x.d;
+		}
+		ret.cont = x.cont;
+		if (*ret.cont == '\0') {
+			ret.ok = PARSE_OK;
+			break;
+		} else if (*ret.cont == ',') {
+			semi = 0;
+		} else if (*ret.cont == ';') {
+			semi = 1;
+		} else {
+			ret.ok = PARSE_OK;
+			ret.cont++;
+			break;
+		}
+		ret.cont++;
+	}
+	if (on == 0) {
+		if (semi) {
+			penult = current_addr;
+		} else {
+			penult = 1;
+		}
+		ult = buffer_find(current_buffer, current_buffer.tail);
+	} else if (on == 1) {
+		if (penult == INV_ADDR) {
+			if (semi) {
+				penult = current_addr;
+			} else {
+				penult = 1;
+			}
+		}
+		ult = penult;
+	} else {
+		if (penult == INV_ADDR) {
+			if (semi) {
+				penult = current_addr;
+			} else {
+				penult = 1;
+			}
+		}
+		if (ult == INV_ADDR) {
+			ult = penult;
+		}
+	}
+	ret.cont = inp;
+	ret.d.start = penult;
+	ret.d.end = ult;
+	return ret;
 }

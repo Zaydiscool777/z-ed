@@ -23,9 +23,9 @@ int main() {
 			comm.name = *ret.cont;
 			comm.args = ret.cont + 1;
 
-			char *x = strndup(inp, ret.cont - inp);
-			struct parse_addr y = parse_one_address(x);
-			printf("%i %i\n", y.ok, y.d);
+			char *s = strndup(inp, ret.cont - inp);
+			struct parse_addrr x = parse_two_address(s);
+			printf("%i,%i\n", x.d.start, x.d.end);
 
 			load(comm); // TODO: support dlerror stuff
 		} else {
