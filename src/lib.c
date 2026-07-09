@@ -486,7 +486,7 @@ struct parse_addrr parse_two_address(char *inp) {
 			ret.ok = x.ok;
 			break;
 		}
-		if (on = 0) {
+		if (on == 0) {
 			penult = x.d;
 			on = 1;
 		} else if (on == 1) {
@@ -504,6 +504,11 @@ struct parse_addrr parse_two_address(char *inp) {
 			semi = 0;
 		} else if (*ret.cont == ';') {
 			semi = 1;
+			if (on == 0) {
+				current_addr = penult;
+			} else {
+				current_addr = ult;
+			}
 		} else {
 			ret.ok = PARSE_OK;
 			ret.cont++;
@@ -539,7 +544,6 @@ struct parse_addrr parse_two_address(char *inp) {
 			ult = penult;
 		}
 	}
-	ret.cont = inp;
 	ret.d.start = penult;
 	ret.d.end = ult;
 	return ret;
