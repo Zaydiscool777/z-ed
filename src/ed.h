@@ -78,43 +78,6 @@ struct command {
 };
 
 /**
- * @struct parse
- * @brief Result of parsing a command input line.
- * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
- * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
- */
-struct parse {
-	int ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
-	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
-};
-
-/**
- * @struct parse_addr
- * @brief Result of parsing a command input line for an address.
- * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
- * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
- * @param d The address parsed, if it succeeds.
- */
-struct parse_addr {
-	int ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
-	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
-	addr d; /// The address parsed, if it succeeds.
-};
-
-/**
- * @struct parse_addrr
- * @brief Result of parsing a command input line for an address range.
- * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
- * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
- * @param d The address range parsed, if it succeeds.
- */
-struct parse_addrr {
-	int ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
-	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
-	struct addrr d; /// The address range parsed, if it succeeds.
-};
-
-/**
  * @brief Parse success of the `parse` struct and its variants.
  * @enum PARSE
  * @param PARSE_OK Success.
@@ -132,6 +95,43 @@ enum PARSE {
 	PARSE_UNEXPECTED_NEWLINE, /// A newline character was found when something else was expected.
 	PARSE_REGEX_NO_MATCHES,
 	PARSE_MAXVALUE /// Maximum value of the PARSE enumeration.
+};
+
+/**
+ * @struct parse
+ * @brief Result of parsing a command input line.
+ * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
+ * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
+ */
+struct parse {
+	enum PARSE ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
+	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
+};
+
+/**
+ * @struct parse_addr
+ * @brief Result of parsing a command input line for an address.
+ * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
+ * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
+ * @param d The address parsed, if it succeeds.
+ */
+struct parse_addr {
+	enum PARSE ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
+	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
+	addr d; /// The address parsed, if it succeeds.
+};
+
+/**
+ * @struct parse_addrr
+ * @brief Result of parsing a command input line for an address range.
+ * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
+ * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
+ * @param d The address range parsed, if it succeeds.
+ */
+struct parse_addrr {
+	enum PARSE ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
+	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
+	struct addrr d; /// The address range parsed, if it succeeds.
 };
 
 // # lib.c

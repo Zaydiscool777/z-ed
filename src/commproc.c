@@ -19,13 +19,11 @@ int main() {
 
 		if (ret.ok == PARSE_OK) {
 			struct command comm;
-			comm.range.start = 0; comm.range.end = 0;
 			comm.name = *ret.cont;
 			comm.args = ret.cont + 1;
-
 			char *s = strndup(inp, ret.cont - inp);
 			struct parse_addrr x = parse_two_address(s);
-			printf("%i,%i\n", x.d.start, x.d.end);
+			comm.range = x.d;
 
 			load(comm); // TODO: support dlerror stuff
 		} else {

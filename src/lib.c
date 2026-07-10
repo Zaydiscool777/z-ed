@@ -55,10 +55,10 @@ struct parse find_comm(char *inp) {
 				}
 			}
 			if (*ret.cont == '\0') {
-				ret.ok = PARSE_OK;
+				ret.ok = PARSE_UNEXPECTED_NUL;
 				break;
 			} else if (*ret.cont == '\n') {
-				ret.ok = PARSE_UNEXPECTED_NEWLINE;
+				ret.ok = PARSE_OK;
 				break;
 			}
 		} else if (*ret.cont == '?') {
@@ -79,10 +79,10 @@ struct parse find_comm(char *inp) {
 				}
 			}
 			if (*ret.cont == '\0') {
-				ret.ok = PARSE_OK;
+				ret.ok = PARSE_UNEXPECTED_NUL;
 				break;
 			} else if (*ret.cont == '\n') {
-				ret.ok = PARSE_UNEXPECTED_NEWLINE;
+				ret.ok = PARSE_OK;
 				break;
 			}
 		} else if (*ret.cont == '+') {
@@ -274,7 +274,12 @@ struct buffer buffer_read_input(void) {
 
 // assumptions: cflags has REG_NEWLINE and not REG_NOSUB.
 struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *match) {
-	struct line *read = at;
+	struct line *read;
+	if (at->next == NULL) {
+		return NULL;
+	} else {
+		read = at->next;
+	}
 	regmatch_t captures[10];
 	while (read != in.tail) {
 		int x = regexec(match, read->text, 10, captures, 0);
@@ -288,8 +293,14 @@ struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *m
 }
 
 // assumptions: cflags has REG_NEWLINE and not REG_NOSUB.
+// how come forward works normally, but not this?
 struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *match) {
-	struct line *read = at;
+	struct line *read;
+	if (at->prev == NULL) {
+		return NULL;
+	} else {
+		read = at->prev;
+	}
 	regmatch_t captures[10];
 	while (read != in.head) {
 		int x = regexec(match, read->text, 10, captures, 0);
@@ -461,6 +472,7 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 	}
 }
 
+// different commands handle default addresses differently.
 struct parse_addrr parse_two_address(char *inp) {
 	struct parse_addrr ret;
 	ret.ok = PARSE_FAIL_GENERAL;
@@ -554,5 +566,6 @@ struct parse_addrr parse_two_address(char *inp) {
 	}
 	ret.d.start = penult;
 	ret.d.end = ult;
+	printf("%i %i\n", ret.d.start, ret.d.end);
 	return ret;
 }
