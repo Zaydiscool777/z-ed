@@ -13,9 +13,11 @@
  * @brief Type synonym for an address in the buffer.
  * @typedef int
  * @note An address can be made invalid by setting it to `INV_ADDR`.
+ * @note An address can be marked so that it should be replaced by a default value by setting it to `DEF_ADDR`
  */
 typedef int addr;
 const addr INV_ADDR = -1;
+const addr DEF_ADDR = -2;
 
 /**
  * @struct line
@@ -127,11 +129,13 @@ struct parse_addr {
  * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
  * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
  * @param d The address range parsed, if it succeeds.
+ * @param on How many address places were parsed.
  */
 struct parse_addrr {
 	enum PARSE ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
 	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
 	struct addrr d; /// The address range parsed, if it succeeds.
+	int on; /// How many address places were parsed.
 };
 
 // # lib.c

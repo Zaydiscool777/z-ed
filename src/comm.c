@@ -1,7 +1,7 @@
 #include "ed.h"
 
 void commasc_100(struct command comm) {
-	puts("d");
+	// puts("d");
 }
 
 void commasc_099(struct command comm) {

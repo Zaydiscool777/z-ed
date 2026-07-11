@@ -472,7 +472,7 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 	}
 }
 
-// different commands handle default addresses differently.
+// inv or def?
 struct parse_addrr parse_two_address(char *inp) {
 	struct parse_addrr ret;
 	ret.ok = PARSE_FAIL_GENERAL;
@@ -530,40 +530,13 @@ struct parse_addrr parse_two_address(char *inp) {
 		}
 		ret.cont++;
 	}
-	if (on == 0) {
-		if (semi == 1) {
-			penult = current_addr;
-		} else if (semi == -1) {
-			penult = current_addr;
-		} else {
-			penult = 1;
-		}
-		ult = buffer_find(current_buffer, current_buffer.tail);
-	} else if (on == 1) {
-		if (penult == INV_ADDR) {
-			if (semi == 1) {
-				penult = current_addr;
-			} else if (semi == -1) {
-				penult = current_addr;
-			} else {
-				penult = 1;
-			}
-		}
-		ult = penult;
-	} else {
-		if (penult == INV_ADDR) {
-			if (semi == 1) {
-				penult = current_addr;
-			} else if (semi == -1) {
-				penult = current_addr;
-			} else {
-				penult = 1;
-			}
-		}
-		if (ult == INV_ADDR) {
-			ult = penult;
-		}
+	if (penult == INV_ADDR) {
+		penult = DEF_ADDR;
 	}
+	if (ult == INV_ADDR) {
+		ult = DEF_ADDR;
+	}
+	ret.on = on;
 	ret.d.start = penult;
 	ret.d.end = ult;
 	printf("%i %i\n", ret.d.start, ret.d.end);
