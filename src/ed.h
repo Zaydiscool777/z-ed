@@ -129,13 +129,15 @@ struct parse_addr {
  * @param ok `PARSE_OK` if parsing succeeds, or some different value if it fails.
  * @param cont Pointer to the remainder of the input after the parsed command data, if it succeeds.
  * @param d The address range parsed, if it succeeds.
- * @param on How many address places were parsed.
+ * @param on How many address places were parsed. It can be 0, 1, or 2.
+ * @param semi 0 if a comma was used as a seperator, 1 if a semicolon was used, or -1 if neither was used.
  */
 struct parse_addrr {
 	enum PARSE ok; /// `PARSE_OK` if parsing succeeds, or some different value if it fails.
 	char *cont; /// Pointer to the remainder of the input after the parsed command data, if it succeeds.
 	struct addrr d; /// The address range parsed, if it succeeds.
-	int on; /// How many address places were parsed.
+	int on; /// How many address places were parsed. It can be 0, 1, or 2.
+	int semi; /// 0 if a comma was used as a seperator, 1 if a semicolon was used, or -1 if neither was used.
 };
 
 // # lib.c

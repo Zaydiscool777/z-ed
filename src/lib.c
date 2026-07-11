@@ -19,6 +19,7 @@ struct parse find_comm(char *inp) {
 	struct parse ret;
 	ret.cont = inp;
 	ret.ok = PARSE_FAIL_GENERAL;
+
 	while (1) {
 		if (*ret.cont == '\0') {
 			ret.ok = PARSE_UNEXPECTED_NUL;
@@ -100,6 +101,7 @@ struct parse find_comm(char *inp) {
 			break;
 		}
 	}
+
 	return ret;
 }
 
@@ -142,10 +144,10 @@ addr buffer_find(struct buffer buff, struct line *i) {
 }
 
 void buffer_insert_after(struct line *after, struct buffer *in, struct buffer *new) {
-	struct line *a = after->next;
 	if (new->head == NULL) {
 		return;
 	}
+	struct line *a = after->next;
 	after->next = new->head;
 	new->head->prev = after;
 	if (a != NULL) {
@@ -157,10 +159,10 @@ void buffer_insert_after(struct line *after, struct buffer *in, struct buffer *n
 }
 
 void buffer_insert_before(struct line *before, struct buffer *in, struct buffer *new) {
-	struct line *a = before->prev;
 	if (new->head == NULL) {
 		return;
 	}
+	struct line *a = before->prev;
 	before->prev = new->tail;
 	new->tail->next = before;
 	if (a != NULL) {
@@ -205,6 +207,7 @@ struct buffer buffer_read_file(char *fname) {
 	struct buffer ret;
 	FILE *file = fopen(fname, "r");
 	struct line *write;
+
 	if (!feof(file)) {
 		write = malloc(sizeof(struct line));
 		write->next = NULL;
@@ -219,6 +222,7 @@ struct buffer buffer_read_file(char *fname) {
 		ret.tail = NULL;
 		return ret;
 	}
+
 	struct line *a;
 	while (!feof(file)) {
 		a = write;
@@ -231,6 +235,7 @@ struct buffer buffer_read_file(char *fname) {
 		getline(&inp, &len, file);
 		write->text = strdup(inp);
 	}
+
 	ret.tail = write;
 	return ret;
 }
@@ -275,20 +280,27 @@ struct buffer buffer_read_input(void) {
 // assumptions: cflags has REG_NEWLINE and not REG_NOSUB.
 struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *match) {
 	struct line *read;
+
 	if (at->next == NULL) {
 		return NULL;
 	} else {
 		read = at->next;
 	}
+
 	regmatch_t captures[10];
-	while (read != in.tail) {
+	while (read != at) {
 		int x = regexec(match, read->text, 10, captures, 0);
 		if (x == 0) {
 			return read;
 		} else {
-			read = read->next;
+			if (read->next == NULL) {
+				read = in.head;
+			} else {
+				read = read->next;
+			}
 		}
 	}
+
 	return NULL;
 }
 
@@ -296,20 +308,27 @@ struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *m
 // how come forward works normally, but not this?
 struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *match) {
 	struct line *read;
+
 	if (at->prev == NULL) {
 		return NULL;
 	} else {
 		read = at->prev;
 	}
+
 	regmatch_t captures[10];
-	while (read != in.head) {
+	while (read != at) {
 		int x = regexec(match, read->text, 10, captures, 0);
 		if (x == 0) {
 			return read;
 		} else {
-			read = read->prev;
+			if (read->prev == NULL) {
+				read = in.tail;
+			} else {
+				read = read->prev;
+			}
 		}
 	}
+
 	return NULL;
 }
 
@@ -318,6 +337,7 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 	ret.ok = PARSE_FAIL_GENERAL;
 	ret.cont = inp;
 	ret.d = start;
+
 	while (1) {
 		if (*ret.cont == '\0') {
 			ret.ok = PARSE_OK;
@@ -333,8 +353,9 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 			while (isdigit(*a)) {
 				a++;
 			}
+
 			char *x = strndup(ret.cont, a - ret.cont);
-			if (ret.d == INV_ADDR) {
+			if (ret.d == DEF_ADDR) {
 				ret.d = 0;
 			}
 			ret.d += atoi(x);
@@ -353,6 +374,7 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 			ret.cont++;
 			char *a = ret.cont;
 			int esc = 0;
+
 			while (*a != '\0' && *a != '\n') {
 				if (esc) {
 					esc = 0;
@@ -368,6 +390,7 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 				}
 			}
 			a--;
+
 			char *x = strndup(ret.cont, a - ret.cont);
 			regex_t r;
 			regcomp(&r, x, 0);
@@ -384,6 +407,7 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 			ret.cont++;
 			char *a = ret.cont;
 			int esc = 0;
+
 			while (*a != '\0' && *a != '\n') {
 				if (esc) {
 					esc = 0;
@@ -399,6 +423,7 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 				}
 			}
 			a--;
+
 			char *x = strndup(ret.cont, a - ret.cont);
 			regex_t r;
 			regcomp(&r, x, 0);
@@ -417,23 +442,25 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 			while (isblank(*a)) {
 				a++;
 			}
+
 			if (isdigit(*a)) {
 				char *b = a;
 				while (isdigit(*b)) {
 					b++;
 				}
 				char *x = strndup(a, b - a);
-				if (ret.d == INV_ADDR) {
+				if (ret.d == DEF_ADDR) {
 					ret.d = current_addr;
 				}
 				ret.d += atoi(x);
 				free(x);
 			} else {
-				if (ret.d == INV_ADDR) {
+				if (ret.d == DEF_ADDR) {
 					ret.d = current_addr;
 				}
 				ret.d++;
 			}
+
 			ret.cont = a;
 		} else if (*ret.cont == '-') {
 			char *a = ret.cont;
@@ -441,23 +468,25 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 			while (isblank(*a)) {
 				a++;
 			}
+
 			if (isdigit(*a)) {
 				char *b = a;
 				while (isdigit(*b)) {
 					b++;
 				}
 				char *x = strndup(a, b - a);
-				if (ret.d == INV_ADDR) {
+				if (ret.d == DEF_ADDR) {
 					ret.d = current_addr;
 				}
 				ret.d -= atoi(x);
 				free(x);
 			} else {
-				if (ret.d == INV_ADDR) {
+				if (ret.d == DEF_ADDR) {
 					ret.d = current_addr;
 				}
 				ret.d--;
 			}
+
 			ret.cont = a;
 		} else if (*ret.cont == ',') {
 			ret.ok = PARSE_OK;
@@ -473,72 +502,54 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 }
 
 // inv or def?
+// the command's special case is only if nothing is before the command. otherwise, the normal rules for addresses are used.
 struct parse_addrr parse_two_address(char *inp) {
 	struct parse_addrr ret;
+	
 	ret.ok = PARSE_FAIL_GENERAL;
 	ret.cont = inp;
-	ret.d.start = INV_ADDR;
-	ret.d.end = INV_ADDR;
-	int semi = -1;
-	addr ult = INV_ADDR;
-	addr penult = INV_ADDR;
-	int on = 0;
-	struct parse_addr x;
+	ret.d.start = DEF_ADDR;
+	ret.d.end = DEF_ADDR;
+	ret.on = 0;
+	ret.semi = -1;
+
+	if (parse_one_address(inp, DEF_ADDR).cont == inp) {
+		ret.ok = PARSE_OK;
+		return ret;
+	}
+
 	while (1) {
-		if (*ret.cont == '\0') {
-			ret.ok = PARSE_OK;
-			break;
-		}
-		if (semi == 1) {
-			x = parse_one_address(ret.cont, ult);
+		struct parse_addr x = parse_one_address(ret.cont, DEF_ADDR);
+		addr use;
+		if (x.ok == PARSE_OK) {
+			use = x.d;
 		} else {
-			x = parse_one_address(ret.cont, INV_ADDR);
-		}
-		if (x.ok != PARSE_OK) {
 			ret.ok = x.ok;
-			break;
-		}
-		if (on == 0) {
-			penult = x.d;
-			on = 1;
-		} else if (on == 1) {
-			ult = x.d;
-			on = 2;
-		} else {
-			penult = ult;
-			ult = x.d;
+			use = INV_ADDR;
 		}
 		ret.cont = x.cont;
-		if (*ret.cont == '\0') {
-			ret.ok = PARSE_OK;
-			break;
-		} else if (*ret.cont == ',') {
-			semi = 0;
+		if (ret.on == 0) {
+			ret.d.start = use;
+			ret.on = 1;
+		} else if (ret.on == 1) {
+			ret.d.end = use;
+			ret.on = 2;
+		} else {
+			ret.d.start = ret.d.end;
+			ret.d.end = use;
+		}
+		if (*ret.cont == ',') {
+			ret.semi = 0;
+			ret.cont++;
 		} else if (*ret.cont == ';') {
-			semi = 1;
-			if (on == 0) {
-				
-			} else if (on == 1) {
-				current_addr = penult;
-			} else {
-				current_addr = ult;
-			}
+			ret.semi = 1;
+			ret.cont++;
 		} else {
 			ret.ok = PARSE_OK;
 			ret.cont++;
 			break;
 		}
-		ret.cont++;
 	}
-	if (penult == INV_ADDR) {
-		penult = DEF_ADDR;
-	}
-	if (ult == INV_ADDR) {
-		ult = DEF_ADDR;
-	}
-	ret.on = on;
-	ret.d.start = penult;
-	ret.d.end = ult;
-	printf("%i %i\n", ret.d.start, ret.d.end);
+
 	return ret;
 }

@@ -41,3 +41,7 @@ void commasc_112(struct command comm) {
 		fputs(buffer_index(current_buffer, comm.range.end)->text, stdout);
 	}
 }
+
+void commasc_061(struct command comm) {
+	printf("%i,%i\n", comm.range.start, comm.range.end);
+}
