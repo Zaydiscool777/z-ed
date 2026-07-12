@@ -7,7 +7,7 @@ Any help you give in the project will be helpful.
 ![regex](https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/regex.h.html)
 ![idk kinda reference](https://github.com/slewsys/ed)
 ![editable user input is useful](https://tiswww.cwru.edu/php/chet/readline/rltop.html)
-![z-ed main map](docs/imgs/map.png)
+![z-ed main map](docs/map.png)
 
 ## building
 

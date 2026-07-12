@@ -288,7 +288,7 @@ struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *m
 	}
 
 	regmatch_t captures[10];
-	while (read != at) {
+	do {
 		int x = regexec(match, read->text, 10, captures, 0);
 		if (x == 0) {
 			return read;
@@ -299,7 +299,7 @@ struct line *buffer_search_forward(struct buffer in, struct line *at, regex_t *m
 				read = read->next;
 			}
 		}
-	}
+	} while (read != at);
 
 	return NULL;
 }
@@ -316,7 +316,7 @@ struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *
 	}
 
 	regmatch_t captures[10];
-	while (read != at) {
+	do {
 		int x = regexec(match, read->text, 10, captures, 0);
 		if (x == 0) {
 			return read;
@@ -327,7 +327,7 @@ struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *
 				read = read->prev;
 			}
 		}
-	}
+	} while (read != at);
 
 	return NULL;
 }
