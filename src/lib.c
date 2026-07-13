@@ -503,53 +503,77 @@ struct parse_addr parse_one_address(char *inp, addr start) {
 
 // inv or def?
 // the command's special case is only if nothing is before the command. otherwise, the normal rules for addresses are used.
+// ,, -> 1,$,$ -> $,$
+// this is w.i.p.
+struct parse_addrr parse_two_address_fake(char *inp) {
+	struct parse_addrr ret;
+	struct parse_addr x = parse_one_address(inp, DEF_ADDR);
+	ret.d.start = x.d;
+	ret.semi = *(++x.cont) == ';';
+	ret.d.end = parse_one_address(x.cont, DEF_ADDR).d;
+	ret.on = 2;
+	ret.ok = x.ok;
+	return ret;
+}
 struct parse_addrr parse_two_address(char *inp) {
+
+	return parse_two_address_fake(inp);
+
 	struct parse_addrr ret;
 	
 	ret.ok = PARSE_FAIL_GENERAL;
 	ret.cont = inp;
-	ret.d.start = DEF_ADDR;
-	ret.d.end = DEF_ADDR;
+	ret.d.start = INV_ADDR;
+	ret.d.end = INV_ADDR;
 	ret.on = 0;
 	ret.semi = -1;
 
-	if (parse_one_address(inp, DEF_ADDR).cont == inp) {
+	if (*parse_one_address(inp, DEF_ADDR).cont == '\0') {
+		ret.d.start = DEF_ADDR;
+		ret.d.end = DEF_ADDR;
 		ret.ok = PARSE_OK;
 		return ret;
 	}
 
+	addr at = DEF_ADDR;
 	while (1) {
-		struct parse_addr x = parse_one_address(ret.cont, DEF_ADDR);
-		addr use;
-		if (x.ok == PARSE_OK) {
-			use = x.d;
-		} else {
-			ret.ok = x.ok;
-			use = INV_ADDR;
+		struct parse_addr this = parse_one_address(ret.cont, at);
+		if (this.ok != PARSE_OK) {
+			ret.ok = this.ok;
+			return ret;
 		}
-		ret.cont = x.cont;
+
+		ret.cont = this.cont;
 		if (ret.on == 0) {
-			ret.d.start = use;
+			ret.d.start = this.d;
 			ret.on = 1;
 		} else if (ret.on == 1) {
-			ret.d.end = use;
+			ret.d.end = this.d;
 			ret.on = 2;
 		} else {
 			ret.d.start = ret.d.end;
-			ret.d.end = use;
+			ret.d.end = this.d;
 		}
+
 		if (*ret.cont == ',') {
 			ret.semi = 0;
-			ret.cont++;
 		} else if (*ret.cont == ';') {
 			ret.semi = 1;
-			ret.cont++;
+			if (ret.on == 0) {
+				current_addr = ret.d.start;
+				at = ret.d.start;
+			} else {
+				current_addr = ret.d.end;
+				at = ret.d.end;
+			}
 		} else {
 			ret.ok = PARSE_OK;
-			ret.cont++;
-			break;
+			return ret;
 		}
+		ret.cont++;
 	}
+
+	
 
 	return ret;
 }
