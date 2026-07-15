@@ -3,7 +3,7 @@
 int main() {
 	lib_init();
 
-	current_addr = 1;
+	_state.current_addr = 1;
 
 	char *inp = NULL;
 	size_t len = 0;
@@ -22,12 +22,12 @@ int main() {
 			comm.name = *ret.cont;
 			comm.args = ret.cont + 1;
 			char *s = strndup(inp, ret.cont - inp);
-			struct parse_addrr x = parse_two_address(s);
+			struct parse_addrr x = parse_two_address(s, &_state);
 			comm.range = x.d;
 
-			load(comm); // TODO: support dlerror stuff
+			load(comm, ret.cont, &_state); // TODO: support dlerror stuff
 		} else {
-			set_ed_error("Invalid ...");
+			set_ed_error("Invalid ...", &_state);
 		}
 
 		free(inp);

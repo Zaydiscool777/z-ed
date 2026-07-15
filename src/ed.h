@@ -140,6 +140,24 @@ struct parse_addrr {
 	int semi; /// 0 if a comma was used as a seperator, 1 if a semicolon was used, or -1 if neither was used.
 };
 
+struct std_ed_state {
+	int help_mode;
+	int ran_global_comm;
+	int mod_buffer;
+	struct buffer current_buffer;
+	struct buffer undo;
+	struct buffer cut;
+	char *filename;
+	char *last_regex;
+	addr marks[26];
+	char *last_shell_esc;
+	int window_size;
+	addr current_addr;
+	char *ed_error;
+};
+
+struct std_ed_state _state;
+
 // # lib.c
 
 void lib_init(void);
@@ -150,7 +168,7 @@ void lib_term(void);
 
 struct parse find_comm(char *inp);
 
-void load(struct command comm);
+void load(struct command comm, char *orig, struct std_ed_state *state);
 
 extern void comm_exit(void);
 
@@ -176,38 +194,10 @@ struct line *buffer_search_backward(struct buffer in, struct line *at, regex_t *
 
 // # standard ed
 
-// variables
-
-int help_mode;
-
-int ran_global_comm;
-
-int mod_buffer;
-
-struct buffer current_buffer;
-
-struct buffer undo;
-
-struct buffer cut;
-
-char *filename;
-
-char *last_regex;
-
-addr marks[26];
-
-char *last_shell_esc;
-
-int window_size;
-
-addr current_addr;
-
-char *ed_error;
-
 // misc
 
-void set_ed_error(char *s);
+void set_ed_error(char *s, struct std_ed_state *state);
 
-struct parse_addr parse_one_address(char *inp, addr start);
+struct parse_addr parse_one_address(char *inp, addr start, struct std_ed_state *state);
 
-struct parse_addrr parse_two_address(char *inp);
+struct parse_addrr parse_two_address(char *inp, struct std_ed_state *state);
