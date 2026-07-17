@@ -2,10 +2,12 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <dlfcn.h> // note: use dlerror and put in ed error system
-#include <string.h>
+#include <string.h> // note: use strerror and put in ed error system
 #include <ctype.h>
 #include <signal.h> // especially Ctrl-D and Ctrl-C. use sigaction, not signal
-#include <regex.h>
+#include <regex.h> // note: use regerror and put in ed error system
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // # types
 
@@ -62,21 +64,6 @@ struct buffer {
 struct addrr {
 	addr start; /// The start of the range, or the address if a single one.
 	addr end; /// The end of the range, or the address if a single one.
-};
-
-/**
- * @struct command
- * @brief Command data that will be used to locate, execute, and provide inputs to commands.
- * @param name The letter that identifies the command, or NUL in the case that none is given.
- * @param range The range that the command acts upon, usually entered before the command name.
- * @param args The extra arguments that the command may use, usually entered after the command name.
- * @attention It is better to assign args to an empty string instead of NULL.
- * @example `1,3m2p` becomes `{'m', {1, 3}, "2p"}`.
- */
-struct command {
-	char name; /// The letter that identifies the command, or NUL in the case that none is given.
-	struct addrr range; /// The range that the command acts upon, usually entered before the command name.
-	char *args; /// The extra arguments that the command may use, usually entered after the command name.
 };
 
 /**
@@ -140,6 +127,21 @@ struct parse_addrr {
 	int semi; /// 0 if a comma was used as a seperator, 1 if a semicolon was used, or -1 if neither was used.
 };
 
+/**
+ * @struct command
+ * @brief Command data that will be used to locate, execute, and provide inputs to commands.
+ * @param name The letter that identifies the command, or NUL in the case that none is given.
+ * @param range The parsing data of the range that the command acts upon, usually entered before the command name.
+ * @param args The extra arguments that the command may use, usually entered after the command name.
+ * @attention It is better to assign args to an empty string instead of NULL.
+ * @note 
+ */
+struct command {
+	char name; /// The letter that identifies the command, or NUL in the case that none is given.
+	struct parse_addrr range; /// The parsing data of the range that the command acts upon, usually entered before the command name.
+	char *args; /// The extra arguments that the command may use, usually entered after the command name.
+};
+
 struct std_ed_state {
 	int help_mode;
 	int ran_global_comm;
@@ -175,6 +177,8 @@ extern void comm_exit(void);
 // line and buffer operations
 
 struct line *buffer_index(struct buffer buff, addr i);
+
+addr buffer_find(struct buffer buff, struct line *i);
 
 void buffer_insert_after(struct line *after, struct buffer *in, struct buffer *new);
 

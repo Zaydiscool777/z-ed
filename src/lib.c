@@ -108,7 +108,7 @@ struct parse find_comm(char *inp) {
 void load(struct command comm, char *orig, struct std_ed_state *state) { // TODO: support dlerror stuff
 	char buff[32];
 	snprintf(buff, 32, "commasc_%03i", (int)comm.name);
-	void (*func)(struct command, char*, struct std_ed_state*) = dlsym(handle, buff);
+	void (*func)(struct command comm, char *orig, struct std_ed_state *state) = dlsym(handle, buff);
 	func(comm, orig, state); // TODO: support dlerror stuff
 }
 
@@ -203,6 +203,35 @@ void buffer_delete(struct buffer *in, struct buffer *bad) {
 	bad->tail = NULL;
 }
 
+struct buffer buffer_dup(struct buffer in) {
+	struct buffer ret;
+	struct line *write;
+	if (in.head == NULL) {
+		ret.head = NULL;
+		ret.tail = NULL;
+		return ret;
+	} else {
+		write = malloc(sizeof(struct line));
+		write->next = NULL;
+		write->prev = NULL;
+		write->text = strdup(in.head->text);
+		ret.head = write;
+	}
+
+	struct line *a;
+	struct line *read = in.head;
+	while (read != NULL) {
+		a = write;
+		write = malloc(sizeof(struct line));
+		write->next = NULL;
+		write->prev = a;
+		write->text = strdup(read->text);
+	}
+	
+	ret.tail = write;
+	return ret;
+}
+
 struct buffer buffer_read_file(char *fname) {
 	struct buffer ret;
 	FILE *file = fopen(fname, "r");
@@ -246,6 +275,7 @@ struct buffer buffer_read_input(void) {
 	char *inp;
 	size_t len; // TODO: perhaps do something with this if line gets a len member
 	ssize_t len2 = getline(&inp, &len, stdin);
+
 	if (strcmp(inp, ".\n") == 0) {
 		ret.head = NULL;
 		ret.tail = NULL;
@@ -257,6 +287,7 @@ struct buffer buffer_read_input(void) {
 		write->prev = NULL;
 		write->next = NULL;
 	}
+
 	int eof = 0;
 	struct line *a;
 	while (!eof) {
@@ -273,6 +304,7 @@ struct buffer buffer_read_input(void) {
 			write->next = NULL;
 		}
 	}
+
 	ret.tail = write;
 	return ret;
 }
@@ -502,8 +534,9 @@ struct parse_addr parse_one_address(char *inp, addr start, struct std_ed_state *
 
 // inv or def?
 // the command's special case is only if nothing is before the command. otherwise, the normal rules for addresses are used.
-// ,, -> 1,$,$ -> $,$
+// ,, -> 1,$,$ -> $,$ and the left of ,; is . (separator override?)
 // this is w.i.p.
+// parse first address, then do while loop? _*,_;-:_ -> 1,_*;-:, -...> 1,$;$-1*:;
 struct parse_addrr parse_two_address_fake(char *inp, struct std_ed_state *state) {
 	struct parse_addrr ret;
 	struct parse_addr x = parse_one_address(inp, DEF_ADDR, state);
@@ -575,4 +608,9 @@ struct parse_addrr parse_two_address(char *inp, struct std_ed_state *state) {
 	
 
 	return ret;
+}
+
+void prepare_undo(struct std_ed_state *state) {
+	buffer_delete(&state->undo, &state->undo);
+	state->undo = buffer_dup(state->current_buffer);
 }

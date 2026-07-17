@@ -22,8 +22,7 @@ int main() {
 			comm.name = *ret.cont;
 			comm.args = ret.cont + 1;
 			char *s = strndup(inp, ret.cont - inp);
-			struct parse_addrr x = parse_two_address(s, &_state);
-			comm.range = x.d;
+			comm.range = parse_two_address(s, &_state);
 
 			load(comm, ret.cont, &_state); // TODO: support dlerror stuff
 		} else {
